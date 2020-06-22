@@ -17,7 +17,6 @@ class Simulator:
         self.testVectors = []
 
         ## Prepare the input data
-        # self.prepareInputData()
         self.readDataIn()
 
         ## Set the columns up
@@ -58,7 +57,6 @@ class Simulator:
 
         ## Check if list sum >
         for list in self.partitionedList:
-            # print(sum(list))
             self.targets.append(1 if sum(list) > 71 else 0)
 
     def setUpColumns(self, numberOfColumns):
@@ -78,22 +76,12 @@ class Simulator:
     def runSimulation(self):
 
         epochs = 0
-        numCorrect= 0
 
         while(epochs < 200):
             for index, inputVector in enumerate(self.inputVectors):
-                # x = input("Proceed?")
 
-                ## Increment epoch
+                # Increment epoch
                 epochs += 1
-
-                # if(epochs > 70):
-                #     x = input("Proceed?")
-
-                # Get output for all columns
-                # print("Input  = " + str(inputVector))
-                # print("Sum = " + str(sum(self.partitionedList[num])))
-                # print("Target = " + str(self.testVectors[index]))
 
                 outputVector = []
 
@@ -105,9 +93,6 @@ class Simulator:
                 # to generate the final output value
                 for column in self.columns:
                     outputVector.append(column.calculateColumnOutputWithConnections())
-
-                # print("outputVector is: ")
-                # print(outputVector)
 
                 # Round outputs to integers
                 outputVector = map(lambda x: int(round(x)), outputVector)
@@ -125,28 +110,20 @@ class Simulator:
 
                     ## Only applicable to incorrect results
                     resultType = "overshot"
-                    # diffAmount = outputVector[index] - 0.5
-                    # if(diffAmount > 0 and self.targets[index] == 1):
-                    #     resultType = "overshot"
-                    ## only incorrect situations are where target / amount disagree
 
                     if(expected == 1 and actual == 0):
                         resultType = "undershot"
                     elif (expected == 0 and actual == 1):
                         resultType = "overshot"
 
-                    # print("expected = "+str(expected))
-                    # print("actual = "+str(actual))
-                    # print("Target was: "+str(self.targets[index]))
-                    # print("Was correct?: "+str(wasCorrect) + " result type: "+resultType)
-
                     if(wasCorrect):
                         numCorrect += 1
                     column.updateWeights(wasCorrect, resultType)
-                    # print("Updating column #"+str(index)+" - it was: "+ "correct" if outputs[index] > 0.45 else "wrong")
 
 
                 print("Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
+
+
 
 
 
@@ -154,9 +131,6 @@ if __name__ == "__main__":
     print("Starting")
 
     sim = Simulator()
-
-    # print(str(sim.inputVectors))
-    # print(str(sim.testVectors))
 
     sim.runSimulation()
 

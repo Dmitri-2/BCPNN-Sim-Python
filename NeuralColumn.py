@@ -30,8 +30,6 @@ class NeuralColumn:
         self.winningNodeIndex = 0
         self.neurons = np.array([])
         self.numNeuronsWithBias = numNeurons # + 1
-        # self.weights = np.random.uniform(low=-0.05, high=0.05, size=(self.numNeuronsWithBias, self.numNeuronsWithBias))
-        # self.crossColumnConnections = []
 
         print("Initializing column: "+str(colNumber))
 
@@ -41,8 +39,6 @@ class NeuralColumn:
 
         # Fully connect the column
         for neuron in self.neurons:
-            # print("Neurons!")
-            # print(self.neurons)
             neuron.addConnectionList(self.neurons)
 
 
@@ -70,19 +66,12 @@ class NeuralColumn:
             neuron.calculateConnectedNodes()
 
         ## Step 3 - Return the max node value (WTA)
-        # winValue = max(neuron.value for neuron in self.neurons)
         winNeuron = max(self.neurons, key=lambda neuron: neuron.value)
 
         ## Record index of winning node
         self.winningNodeIndex = np.where(self.neurons == winNeuron)[0][0] #self.neurons.index(winNeuron)
-        # self.winningNodeIndex = self.winningNodeIndex[0][0]
 
-        # print("Winning node index: "+str(self.winningNodeIndex))
         return winNeuron.value
-
-        #inputs = np.append(1, inputs)
-        #resultNodes = np.dot(inputs, self.weights)
-        #return self.sigmoidOfValue(resultNodes.max())
 
 
     def sigmoidOfValue(self, value):
@@ -144,9 +133,6 @@ if __name__ == "__main__":
 
     ## Initialize the inputs
     inputs = np.array([15,25,5,30,20])
-    # inputs = column.sigmoidOfList(inputs)
-    # n = Neuron.Neuron(0.3)
-    # column.addRandomConnection(n)
 
     # print(column1.neurons)
     for n in column1.neurons:

@@ -39,8 +39,6 @@ class Neuron:
         # Calculate the node activation (should get a single value)
         activation = np.dot(inputs, self.weights)
         self.value = activation
-        # print(activation)
-        # self.input = 0
 
     ## Certified
     def calculateConnectedNodes(self):
@@ -48,8 +46,6 @@ class Neuron:
         # print("Initial value: "+str(self.value))
         for index, node in enumerate(self.connections):
             self.value += node.value * self.connectionWeights[index]
-            # print(node.value * self.connectionWeights[index])
-            # print(self.value)
 
 
 
