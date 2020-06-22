@@ -3,6 +3,7 @@
 import NeuralColumn
 import numpy as np
 import random
+import csv
 
 class Simulator:
 
@@ -12,12 +13,36 @@ class Simulator:
         self.partitionedList = []
         self.targets = []
         self.inputArray = [12, 19, 10, 25, 22, 10, 18, 14, 3, 22, 30, 7, 29, 23, 11, 11, 23, 24, 3, 8, 29, 4, 8, 27, 23, 16, 27, 22, 7, 25, 24, 15, 22, 7, 24, 1, 12, 18, 20, 19, 21, 28, 14, 9, 28, 23, 29, 8, 3, 7]
+        self.inputVectors = []
+        self.testVectors = []
 
         ## Prepare the input data
-        self.prepareInputData()
+        # self.prepareInputData()
+        self.readDataIn()
 
         ## Set the columns up
-        self.setUpColumns()
+        self.setUpColumns(10)
+
+    def readDataIn(self):
+
+        with open('trainVectors.txt') as file:
+            reader = csv.reader(file)
+            inputData = list(reader)
+
+        for row in inputData:
+            inputVector = np.array(row).astype(np.int)
+            self.inputVectors.append(np.array(row).astype(np.int))
+
+            # Change 2 values
+            testVector = inputVector
+
+            randInt1 = random.randint(0, len(inputVector)-1)
+            randInt2 = random.randint(0, len(inputVector)-1)
+            testVector[randInt1] = (testVector[randInt1]+1) % 2
+            testVector[randInt2] = (testVector[randInt2]+1) % 2
+
+            self.testVectors.append(testVector)
+
 
     def splitArray(self, lst, parts):
         x = []
@@ -26,7 +51,7 @@ class Simulator:
         return x
 
     def prepareInputData(self):
-        self.partitionedList = self.splitArray(self.inputArray, 5)
+        self.partitionedList = self.splitArray(self.inputArray, 10)
 
         print(str(len(self.inputArray)))
         print(str(self.partitionedList))
@@ -36,10 +61,10 @@ class Simulator:
             # print(sum(list))
             self.targets.append(1 if sum(list) > 71 else 0)
 
-    def setUpColumns(self):
+    def setUpColumns(self, numberOfColumns):
         ## Setup Columns
-        for num in range(5):
-            self.columns = np.append(self.columns, NeuralColumn.NeuralColumn(5, num))
+        for num in range(numberOfColumns):
+            self.columns = np.append(self.columns, NeuralColumn.NeuralColumn(28, num, len(self.inputVectors[0])))
 
         ## Connect nodes across columns
         for num in range(5):
@@ -53,59 +78,65 @@ class Simulator:
     def runSimulation(self):
 
         epochs = 0
+        numCorrect= 0
 
         while(epochs < 200):
-            for num in range(10):
+            for index, inputVector in enumerate(self.inputVectors):
                 # x = input("Proceed?")
 
                 ## Increment epoch
                 epochs += 1
 
-                # Get output for all columns
-                # print("Input = " + str(self.partitionedList[num]))
-                # print("Sum = " + str(sum(self.partitionedList[num])))
-                # print("Target = " + str(self.targets[num]))
+                # if(epochs > 70):
+                #     x = input("Proceed?")
 
-                outputs = []
+                # Get output for all columns
+                # print("Input  = " + str(inputVector))
+                # print("Sum = " + str(sum(self.partitionedList[num])))
+                # print("Target = " + str(self.testVectors[index]))
+
+                outputVector = []
 
                 # Run the initial input through the columns
                 for column in self.columns:
-                    column.calculateInitialColValues(self.partitionedList[num])
+                    column.calculateInitialColValues(inputVector)
 
                 # Re-run the computation now taking into account node connections
                 # to generate the final output value
                 for column in self.columns:
-                    outputs.append(column.calculateColumnOutputWithConnections())
+                    outputVector.append(column.calculateColumnOutputWithConnections())
 
-                ## STOPPED HERE - WRITING THE WEIGHT UPDATE FOR THE COLUMNS
-                # print("Outputs are: ")
-                # print(outputs)
+                # print("outputVector is: ")
+                # print(outputVector)
+
+                # Round outputs to integers
+                outputVector = map(lambda x: int(round(x)), outputVector)
 
                 numCorrect = 0
 
                 ## Update weights for any incorrect columns
                 for index, column in enumerate(self.columns):
+
+                    expected = inputVector[index]
+                    actual = outputVector[index]
+
                     # If it was correct/incorrect - update weights accordingly
-                    wasCorrect = (outputs[index] > 0.5 and self.targets[index] == 1) or (outputs[index] < 0.5 and self.targets[index] == 0)
-                    # resultType = "overshot" if (outputs[index] - 0.5) > 0 and self.targets[index] == 0 else "undershot"
+                    wasCorrect = (expected == actual)
 
                     ## Only applicable to incorrect results
                     resultType = "overshot"
-                    diffAmount = outputs[index] - 0.5
+                    # diffAmount = outputVector[index] - 0.5
                     # if(diffAmount > 0 and self.targets[index] == 1):
                     #     resultType = "overshot"
                     ## only incorrect situations are where target / amount disagree
 
-                    if(diffAmount > 0 and self.targets[index] == 0):
-                        resultType = "overshot"
-                    elif (diffAmount < 0 and self.targets[index] == 0):
+                    if(expected == 1 and actual == 0):
                         resultType = "undershot"
-                    elif (diffAmount > 0 and self.targets[index] == 1):
+                    elif (expected == 0 and actual == 1):
                         resultType = "overshot"
-                    elif (diffAmount < 0 and self.targets[index] == 1):
-                        resultType = "undershot"
 
-                    # print("output = "+str(outputs[index]))
+                    # print("expected = "+str(expected))
+                    # print("actual = "+str(actual))
                     # print("Target was: "+str(self.targets[index]))
                     # print("Was correct?: "+str(wasCorrect) + " result type: "+resultType)
 
@@ -115,7 +146,7 @@ class Simulator:
                     # print("Updating column #"+str(index)+" - it was: "+ "correct" if outputs[index] > 0.45 else "wrong")
 
 
-                print("Total correct: "+str(numCorrect)+" / "+str(len(outputs)))
+                print("Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
 
 
 
@@ -123,6 +154,9 @@ if __name__ == "__main__":
     print("Starting")
 
     sim = Simulator()
+
+    # print(str(sim.inputVectors))
+    # print(str(sim.testVectors))
 
     sim.runSimulation()
 

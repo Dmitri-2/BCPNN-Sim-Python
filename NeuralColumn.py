@@ -24,8 +24,8 @@ import random
 
 
 class NeuralColumn: 
-    def __init__(self, numNeurons, number):
-        self.number = number
+    def __init__(self, numNeurons, colNumber, numOfInputs):
+        self.number = colNumber
         self.test = []
         self.winningNodeIndex = 0
         self.neurons = np.array([])
@@ -33,11 +33,11 @@ class NeuralColumn:
         # self.weights = np.random.uniform(low=-0.05, high=0.05, size=(self.numNeuronsWithBias, self.numNeuronsWithBias))
         # self.crossColumnConnections = []
 
-        print("Initializing column: "+str(number))
+        print("Initializing column: "+str(colNumber))
 
         # Generate all the neurons in the column
         for num in range(self.numNeuronsWithBias):
-            self.neurons = np.append(self.neurons, Neuron.Neuron(numNeurons))
+            self.neurons = np.append(self.neurons, Neuron.Neuron(numOfInputs))
 
         # Fully connect the column
         for neuron in self.neurons:
@@ -122,16 +122,16 @@ class NeuralColumn:
 
                 if(index == self.winningNodeIndex):
                     if(direction == "undershot"):
-                        neuron.decreaseWeights(0.08) # decrease by 8%
+                        neuron.decreaseWeights(0.02) # decrease by 2%
                     elif (direction == "overshot"):
-                        neuron.decreaseWeights(0.1) # decrease by 10%
+                        neuron.decreaseWeights(0.04) # decrease by 5%
                     # print("Decreasing node #"+str(index))
 
                 else:
                     if (direction == "undershot"):
-                        neuron.increaseWeights(0.05) # increase by 5%
+                        neuron.increaseWeights(0.015) # increase by 1.5%
                     elif (direction == "overshot"):
-                        neuron.decreaseWeights(0.05) # decrease by 5%
+                        neuron.decreaseWeights(0.015) # decrease by 1.5%
                     # print("Increasing node #"+str(index))
 
 
