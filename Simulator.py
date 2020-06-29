@@ -12,15 +12,17 @@ class Simulator:
         self.columns = []
         self.partitionedList = []
         self.targets = []
-        self.inputArray = [12, 19, 10, 25, 22, 10, 18, 14, 3, 22, 30, 7, 29, 23, 11, 11, 23, 24, 3, 8, 29, 4, 8, 27, 23, 16, 27, 22, 7, 25, 24, 15, 22, 7, 24, 1, 12, 18, 20, 19, 21, 28, 14, 9, 28, 23, 29, 8, 3, 7]
+        self.inputArray = [12, 19, 5]
         self.inputVectors = []
         self.testVectors = []
+
+        self.numberOfColumns = 10
 
         ## Prepare the input data
         self.readDataIn()
 
         ## Set the columns up
-        self.setUpColumns(10)
+        self.setUpColumns(self.numberOfColumns)
 
     def readDataIn(self):
 
@@ -28,7 +30,12 @@ class Simulator:
             reader = csv.reader(file)
             inputData = list(reader)
 
+        counter = 0
         for row in inputData:
+            # counter += 1
+            # if(counter > 5):
+            #     break
+
             inputVector = np.array(row).astype(np.int)
             self.inputVectors.append(np.array(row).astype(np.int))
 
@@ -49,27 +56,19 @@ class Simulator:
             x.append(lst[i:i + parts])
         return x
 
-    def prepareInputData(self):
-        self.partitionedList = self.splitArray(self.inputArray, 10)
-
-        print(str(len(self.inputArray)))
-        print(str(self.partitionedList))
-
-        ## Check if list sum >
-        for list in self.partitionedList:
-            self.targets.append(1 if sum(list) > 71 else 0)
 
     def setUpColumns(self, numberOfColumns):
         ## Setup Columns
         for num in range(numberOfColumns):
-            self.columns = np.append(self.columns, NeuralColumn.NeuralColumn(28, num, len(self.inputVectors[0])))
+            self.columns = np.append(self.columns, NeuralColumn.NeuralColumn(64, num, len(self.inputVectors[0])))
 
         ## Connect nodes across columns
-        for num in range(5):
+        for num in range(self.numberOfColumns-1):
             ## In %30 of cases, make connection across columns
-            if (random.randint(0, 10) < 10):
-                # Connect a random node in the other column
-                self.columns[num].addRandomConnectionFrom(self.columns[random.randint(0, 4)])
+            for i in range(15):
+                if (random.randint(0, 10) < 10):
+                    # Connect a random node in the other column
+                    self.columns[num].addRandomConnectionFrom(self.columns[random.randint(0, self.numberOfColumns-1)])
 
 
     ## Run the simulation
@@ -77,51 +76,58 @@ class Simulator:
 
         epochs = 0
 
-        while(epochs < 200):
+        while(epochs < 250):
             for index, inputVector in enumerate(self.inputVectors):
 
                 # Increment epoch
                 epochs += 1
 
-                outputVector = []
+                for i in range(5):
+                    outputVector = []
 
-                # Run the initial input through the columns
-                for column in self.columns:
-                    column.calculateInitialColValues(inputVector)
+                    # Run the initial input through the columns
+                    for column in self.columns:
+                        column.calculateInitialColValues(inputVector)
 
-                # Re-run the computation now taking into account node connections
-                # to generate the final output value
-                for column in self.columns:
-                    outputVector.append(column.calculateColumnOutputWithConnections())
+                    # Re-run the computation now taking into account node connections
+                    # to generate the final output value
+                    for column in self.columns:
+                        outputVector.append(column.calculateColumnOutputWithConnections())
 
-                # Round outputs to integers
-                outputVector = map(lambda x: int(round(x)), outputVector)
+                    # Round outputs to integers
+                    outputVector = map(lambda x: 0 if int(round(x))==0 else 1, outputVector)
 
-                numCorrect = 0
+                    numCorrect = 0
 
-                ## Update weights for any incorrect columns
-                for index, column in enumerate(self.columns):
+                    print("Input  = "+str(inputVector))
+                    print("Output = "+str(outputVector))
 
-                    expected = inputVector[index]
-                    actual = outputVector[index]
+                    ## Update weights for any incorrect columns
+                    for index, column in enumerate(self.columns):
 
-                    # If it was correct/incorrect - update weights accordingly
-                    wasCorrect = (expected == actual)
+                        expected = inputVector[index]
+                        actual = outputVector[index]
 
-                    ## Only applicable to incorrect results
-                    resultType = "overshot"
+                        # If it was correct/incorrect - update weights accordingly
+                        wasCorrect = (expected == actual)
 
-                    if(expected == 1 and actual == 0):
-                        resultType = "undershot"
-                    elif (expected == 0 and actual == 1):
+                        ## Only applicable to incorrect results
                         resultType = "overshot"
 
-                    if(wasCorrect):
-                        numCorrect += 1
-                    column.updateWeights(wasCorrect, resultType)
+                        if(expected == 1 and actual == 0):
+                            resultType = "undershot"
+                        elif (expected == 0 and actual == 1):
+                            resultType = "overshot"
+
+                        if(wasCorrect):
+                            numCorrect += 1
+                        column.updateWeights(wasCorrect, resultType)
 
 
-                print("Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
+                    print(str(i)+" Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
+
+                    if(numCorrect == len(outputVector)):
+                        break
 
 
 

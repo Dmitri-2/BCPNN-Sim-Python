@@ -51,6 +51,9 @@ class NeuralColumn:
     def calculateInitialColValues(self, inputs):
 
         ## Normalize the inputs
+
+        # Don't do this - use constraints instead (for weights)
+
         inputs = self.sigmoidOfList(inputs)
 
         ## Step 1 - Compute all neuron values
@@ -71,6 +74,10 @@ class NeuralColumn:
         ## Record index of winning node
         self.winningNodeIndex = np.where(self.neurons == winNeuron)[0][0] #self.neurons.index(winNeuron)
 
+        self.neurons[self.winningNodeIndex].isWinningNode = True
+
+        # winNeuron.value = self.sigmoidOfValue(winNeuron.value)
+        # print ("returning - "+str((winNeuron.value)))
         return winNeuron.value
 
 
@@ -102,25 +109,32 @@ class NeuralColumn:
     # If correct - do nothing
     def updateWeights(self, wasCorrect, direction):
 
-        if(wasCorrect):
+        # If column was correct - no need to update the column neuron weights
+        if (wasCorrect):
             return
 
-        else: # if we were incorrect
-            # print("winning node was: "+str(self.winningNodeIndex))
-            for index, neuron in enumerate(self.neurons):
+        # print("winning node was: "+str(self.winningNodeIndex))
+        for index, neuron in enumerate(self.neurons):
 
-                if(index == self.winningNodeIndex):
-                    if(direction == "undershot"):
-                        neuron.decreaseWeights(0.02) # decrease by 2%
-                    elif (direction == "overshot"):
-                        neuron.decreaseWeights(0.04) # decrease by 5%
+            # Reset the winning node flag
+            neuron.isWinningNode = False
+
+            if(index == self.winningNodeIndex):
+                if(direction == "undershot"):
+                    neuron.decreaseWeights(0.02) # decrease by 2%
+                    neuron.decreaseConnectionWeights(0.01)
+                elif (direction == "overshot"):
+                    neuron.decreaseWeights(0.04) # decrease by 5%
+                    neuron.decreaseConnectionWeights(0.02)
                     # print("Decreasing node #"+str(index))
 
-                else:
-                    if (direction == "undershot"):
-                        neuron.increaseWeights(0.015) # increase by 1.5%
-                    elif (direction == "overshot"):
-                        neuron.decreaseWeights(0.015) # decrease by 1.5%
+            else:
+                if (direction == "undershot"):
+                    neuron.increaseWeights(0.015) # increase by 1.5%
+                    neuron.increaseConnectionWeights(0.03)
+                elif (direction == "overshot"):
+                    neuron.decreaseWeights(0.015) # decrease by 1.5%
+                    neuron.decreaseConnectionWeights(0.02)
                     # print("Increasing node #"+str(index))
 
 

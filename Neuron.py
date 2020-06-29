@@ -10,10 +10,13 @@ class Neuron:
         self.value = 0
         self.numOfInputs = numOfInputs
         self.inputs = 0
-        self.winningNodeIndex = 0  # Index of node that won the round
         self.connections = np.array([])
+        self.isWinningNode = False
         self.connectionWeights = np.array([])
         self.weights = np.random.uniform(low=-0.25, high=0.25, size=(numOfInputs))
+
+    def isActivated(self):
+        return True if(self.value > 0.5) else False
 
     def reinitializeWeightMatrix(self):
         self.weights = np.random.uniform(low=-0.25, high=0.25, size=(self.numOfInputs))
@@ -47,6 +50,28 @@ class Neuron:
         for index, node in enumerate(self.connections):
             self.value += node.value * self.connectionWeights[index]
 
+    def increaseConnectionWeights(self, percent):
+
+        # Check if both nodes are active at the same time
+        for index, node in enumerate(self.connections):
+            # Implimenting hebbian learning - if
+            # both nodes active at the same time - strengthen the connection
+            # print("both nodes - values " + str(self.isWinningNode) + " - " + str(node.isWinningNode))
+            if(self.isWinningNode or node.isWinningNode):
+                self.connectionWeights[index] += abs(self.connectionWeights[index] * percent)
+                # print("both nodes activated !!!!")
+
+
+    def decreaseConnectionWeights(self, percent):
+
+        # Check if both nodes are active at the same time
+        for index, node in enumerate(self.connections):
+            # Implimenting hebbian learning - if
+            # both nodes active at the same time - strengthen the connection
+            # print("both nodes - values " + str(self.isWinningNode) + " - " + str(node.isWinningNode))
+            if (self.isWinningNode or node.isWinningNode):
+                self.connectionWeights[index] -= abs(self.connectionWeights[index] * percent)
+
 
 
 if __name__ == "__main__":
@@ -76,6 +101,11 @@ if __name__ == "__main__":
     print(x.weights)
     x.decreaseWeights(0.15)
     print(x.weights)
+
+    print("---- Connected Weights ---- ")
+    print(x.connectionWeights)
+    x.updateConnectionWeights(0.5)
+    print(x.connectionWeights)
 
     ## Add a connection from y to x
     x.addConnectionFrom(y)

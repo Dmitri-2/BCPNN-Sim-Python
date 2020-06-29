@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 vectorLength = 10
 numberOfVectors = 100
@@ -7,7 +8,8 @@ allVectors = []
 file = open("trainVectors.txt", "w")
 
 for i in range(0, numberOfVectors):
-    vector = np.random.randint(2, size=vectorLength)
+    vector = np.random.randint(1, size=vectorLength)
+    vector[random.randint(0, 9)] = 1
     allVectors.append(vector)
 
     # Write out each vector to file
