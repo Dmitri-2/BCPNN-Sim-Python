@@ -29,13 +29,14 @@ class NeuralColumn:
         self.test = []
         self.winningNodeIndex = 0
         self.neurons = np.array([])
+        self.neuronConnectionProbabilities = np.array([])
         self.numNeuronsWithBias = numNeurons # + 1
 
         print("Initializing column: "+str(colNumber))
 
         # Generate all the neurons in the column
         for num in range(self.numNeuronsWithBias):
-            self.neurons = np.append(self.neurons, Neuron.Neuron(numOfInputs))
+            self.neurons = np.append(self.neurons, Neuron.Neuron(numOfInputs, float(1)/float(self.numNeuronsWithBias)))
 
         # Fully connect the column
         for neuron in self.neurons:
@@ -69,7 +70,7 @@ class NeuralColumn:
             neuron.calculateConnectedNodes()
 
         ## Step 3 - Return the max node value (WTA)
-        winNeuron = max(self.neurons, key=lambda neuron: neuron.value)
+        winNeuron = max(self.neurons, key=lambda neuron: abs(neuron.value))
 
         ## Record index of winning node
         self.winningNodeIndex = np.where(self.neurons == winNeuron)[0][0] #self.neurons.index(winNeuron)
@@ -107,11 +108,9 @@ class NeuralColumn:
 
     # Update weights based on if we were correct or not
     # If correct - do nothing
-    def updateWeights(self, wasCorrect, direction):
+    # def updateWeights(self, wasCorrect, direction):
 
-        # If column was correct - no need to update the column neuron weights
-        if (wasCorrect):
-            return
+    def updateWeights(self, target):
 
         # print("winning node was: "+str(self.winningNodeIndex))
         for index, neuron in enumerate(self.neurons):
@@ -119,22 +118,30 @@ class NeuralColumn:
             # Reset the winning node flag
             neuron.isWinningNode = False
 
-            if(index == self.winningNodeIndex):
-                if(direction == "undershot"):
-                    neuron.decreaseWeights(0.02) # decrease by 2%
-                    neuron.decreaseConnectionWeights(0.01)
-                elif (direction == "overshot"):
-                    neuron.decreaseWeights(0.04) # decrease by 5%
-                    neuron.decreaseConnectionWeights(0.02)
-                    # print("Decreasing node #"+str(index))
+            # Update weights based on Lansner formula
+            neuron.updateWeights(target)
 
-            else:
-                if (direction == "undershot"):
-                    neuron.increaseWeights(0.015) # increase by 1.5%
-                    neuron.increaseConnectionWeights(0.03)
-                elif (direction == "overshot"):
-                    neuron.decreaseWeights(0.015) # decrease by 1.5%
-                    neuron.decreaseConnectionWeights(0.02)
+
+
+
+            # Old weight update algorithm
+
+            # if(index == self.winningNodeIndex):
+            #     if(direction == "undershot"):
+            #         neuron.decreaseWeights(0.02) # decrease by 2%
+            #         neuron.decreaseConnectionWeights(0.01)
+            #     elif (direction == "overshot"):
+            #         neuron.decreaseWeights(0.04) # decrease by 5%
+            #         neuron.decreaseConnectionWeights(0.02)
+            #         # print("Decreasing node #"+str(index))
+            #
+            # else:
+            #     if (direction == "undershot"):
+            #         neuron.increaseWeights(0.015) # increase by 1.5%
+            #         neuron.increaseConnectionWeights(0.03)
+            #     elif (direction == "overshot"):
+            #         neuron.decreaseWeights(0.015) # decrease by 1.5%
+            #         neuron.decreaseConnectionWeights(0.02)
                     # print("Increasing node #"+str(index))
 
 

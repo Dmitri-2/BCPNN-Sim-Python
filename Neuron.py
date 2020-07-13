@@ -6,10 +6,14 @@ import random
 class Neuron:
 
     ## Only takes the number of inputs it should expect
-    def __init__(self, numOfInputs):
-        self.value = 0
+    def __init__(self, numOfInputs, initialProbability):
+        self.value = 0 # e.g "activity"
+        self.bias = 0
+        self.probability = initialProbability
+        self.previousProbability = 0
+        self.beta = 0
         self.numOfInputs = numOfInputs
-        self.inputs = 0
+        self.inputs = []
         self.connections = np.array([])
         self.isWinningNode = False
         self.connectionWeights = np.array([])
@@ -38,17 +42,65 @@ class Neuron:
     def decreaseWeights(self, percent):
         self.weights -= abs(self.weights * percent)
 
+
+    # Function that calculates the activation of the neuron
+    # Inputs:
+    #     - input values
+    #     - weights
+    # Output:
+    #     - node activation value
+
     def calculate(self, inputs):
+
+        self.inputs = inputs
+
+        # Equation 1
+        # Following formula #1 from the Lansner paper
+        self.beta = math.log(self.probability, 10)
+
         # Calculate the node activation (should get a single value)
-        activation = np.dot(inputs, self.weights)
+        # Following formula #5 from Lansner paper
+        activation = np.dot(inputs, self.weights) + self.beta
         self.value = activation
 
-    ## Certified
+
+    # Function that augments the node's activation by computing the connection weights
+    # Inputs:
+    #     - node activations
+    # Output:
+    #     - new node activation for self
     def calculateConnectedNodes(self):
         # For each connected node, multiple the other node's value by a internally stored weight
         # print("Initial value: "+str(self.value))
         for index, node in enumerate(self.connections):
             self.value += node.value * self.connectionWeights[index]
+
+
+    # Function to update the weights that the node has control over
+    # Inputs:
+    #     - self weights
+    #     - input to node
+    # Output:
+    #     - new node weights for self
+    def updateWeights(self, target):
+        # Tau
+        tau = 1.5
+        # Doing logs in base 10
+        for index, weight in enumerate(self.weights):
+            # New weight value = log( input - e^(-1 / tau) * (input - a ^ old weight value)
+            # Where a is a the log base - I chose 10
+            a = 10
+
+            input = target
+            # input = np.mean(self.inputs)
+
+            #using target as input??
+
+            self.weights[index] = math.log((input - (math.exp(-1/tau)*(input-a**self.weights[index]))), a)
+            # print("New weight: "+str(self.weights[index]))
+
+
+
 
     def increaseConnectionWeights(self, percent):
 
@@ -78,8 +130,8 @@ if __name__ == "__main__":
     print("Starting")
 
     ## Initialize the nodes
-    x = Neuron(3)
-    y = Neuron(3)
+    x = Neuron(3, 0.5)
+    y = Neuron(3, 0.5)
 
     # Step 1
     ## Calculate the initial node values

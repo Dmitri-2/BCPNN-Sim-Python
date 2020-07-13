@@ -32,9 +32,9 @@ class Simulator:
 
         counter = 0
         for row in inputData:
-            # counter += 1
-            # if(counter > 5):
-            #     break
+            counter += 1
+            if(counter > 5):
+                break
 
             inputVector = np.array(row).astype(np.int)
             self.inputVectors.append(np.array(row).astype(np.int))
@@ -76,13 +76,13 @@ class Simulator:
 
         epochs = 0
 
-        while(epochs < 250):
+        while(epochs < 25):
             for index, inputVector in enumerate(self.inputVectors):
 
                 # Increment epoch
                 epochs += 1
 
-                for i in range(5):
+                for i in range(10):
                     outputVector = []
 
                     # Run the initial input through the columns
@@ -95,7 +95,7 @@ class Simulator:
                         outputVector.append(column.calculateColumnOutputWithConnections())
 
                     # Round outputs to integers
-                    outputVector = map(lambda x: 0 if int(round(x))==0 else 1, outputVector)
+                    outputVector = map(lambda x: 0 if int(round(x)) <= 0 else 1, outputVector)
 
                     numCorrect = 0
 
@@ -112,16 +112,17 @@ class Simulator:
                         wasCorrect = (expected == actual)
 
                         ## Only applicable to incorrect results
-                        resultType = "overshot"
-
-                        if(expected == 1 and actual == 0):
-                            resultType = "undershot"
-                        elif (expected == 0 and actual == 1):
-                            resultType = "overshot"
+                        # resultType = "overshot"
+                        #
+                        # if(expected == 1 and actual == 0):
+                        #     resultType = "undershot"
+                        # elif (expected == 0 and actual == 1):
+                        #     resultType = "overshot"
 
                         if(wasCorrect):
                             numCorrect += 1
-                        column.updateWeights(wasCorrect, resultType)
+                        else:
+                            column.updateWeights(expected)
 
 
                     print(str(i)+" Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
