@@ -5,23 +5,6 @@ import numpy as np
 import math
 import random
 
-### Idea for weight updates:
-#  1. For this first basic test (classification)
-#     The output of the majority of columns gets the vote.
-#     We should switch to doing a per-column result when classifying patterns and other
-#
-#  In any case, weight updates should go like this:
-#
-#  1. Mark whole columns as correct/incorrect, based on their winning value - say over/under
-#  2. Column then goes back and adjusts weight based on the node that
-#     won and those that lost the WTA process
-#  3. Winner gets their weights decreased by 8%
-#     Everyone else gets their weights increased by 2%
-#
-#     Could also do - Nodes that overshot get their weights reduced by 10%
-#
-
-
 
 class NeuralColumn: 
     def __init__(self, numNeurons, colNumber, numOfInputs):
@@ -51,15 +34,11 @@ class NeuralColumn:
 
     def calculateInitialColValues(self, inputs):
 
-        ## Normalize the inputs
-
-        # Don't do this - use constraints instead (for weights)
-
-        inputs = self.sigmoidOfList(inputs)
+        ## Used to normalize input here with Sigmoid
 
         ## Step 1 - Compute all neuron values
-        for neuron in self.neurons:
-            neuron.calculate(inputs)
+        for index, neuron in enumerate(self.neurons):
+            neuron.calculate(inputs[index])
 
 
 
@@ -79,7 +58,8 @@ class NeuralColumn:
 
         # winNeuron.value = self.sigmoidOfValue(winNeuron.value)
         # print ("returning - "+str((winNeuron.value)))
-        return winNeuron.value
+
+        return map(lambda neuron: neuron.value, self.neurons)
 
 
     def sigmoidOfValue(self, value):
@@ -96,7 +76,6 @@ class NeuralColumn:
 
     def addConnection(self, number, otherNode):
         self.neurons[number].addConnection(otherNode)
-        # self.crossColumnConnections.append([column, node])
         print("Adding connection from "+str(self.number)+" to "+str(column.number))
 
     def addRandomConnectionFrom(self, srcColumn):
@@ -111,8 +90,6 @@ class NeuralColumn:
     # def updateWeights(self, wasCorrect, direction):
 
     def updateWeights(self, target):
-
-        # print("winning node was: "+str(self.winningNodeIndex))
         for index, neuron in enumerate(self.neurons):
 
             # Reset the winning node flag
@@ -120,29 +97,8 @@ class NeuralColumn:
 
             # Update weights based on Lansner formula
             neuron.updateWeights(target)
+            neuron.updateConnectedProbabilities()
 
-
-
-
-            # Old weight update algorithm
-
-            # if(index == self.winningNodeIndex):
-            #     if(direction == "undershot"):
-            #         neuron.decreaseWeights(0.02) # decrease by 2%
-            #         neuron.decreaseConnectionWeights(0.01)
-            #     elif (direction == "overshot"):
-            #         neuron.decreaseWeights(0.04) # decrease by 5%
-            #         neuron.decreaseConnectionWeights(0.02)
-            #         # print("Decreasing node #"+str(index))
-            #
-            # else:
-            #     if (direction == "undershot"):
-            #         neuron.increaseWeights(0.015) # increase by 1.5%
-            #         neuron.increaseConnectionWeights(0.03)
-            #     elif (direction == "overshot"):
-            #         neuron.decreaseWeights(0.015) # decrease by 1.5%
-            #         neuron.decreaseConnectionWeights(0.02)
-                    # print("Increasing node #"+str(index))
 
 
 if __name__ == "__main__":
