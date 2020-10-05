@@ -26,14 +26,14 @@ class Simulator:
 
     def readDataIn(self):
 
-        with open('trainVectors.txt') as file:
+        with open('trainVectors100.txt') as file:
             reader = csv.reader(file)
             inputData = list(reader)
 
         counter = 0
         for row in inputData:
             counter += 1
-            if(counter > 5):
+            if(counter > 3):
                 break
 
             inputVector = np.array(row).astype(np.int)
@@ -60,9 +60,10 @@ class Simulator:
     def setUpColumns(self, numberOfColumns):
         ## Setup Columns
         for num in range(numberOfColumns):
-            self.columns = np.append(self.columns, NeuralColumn.NeuralColumn(64, num, len(self.inputVectors[0])))
+            self.columns = np.append(self.columns, NeuralColumn.NeuralColumn(10, num, 10)) ## specifying 10 inputs per col
 
         ## Connect nodes across columns
+
         for num in range(self.numberOfColumns-1):
             ## In %30 of cases, make connection across columns
             for i in range(15):
@@ -72,7 +73,7 @@ class Simulator:
 
 
     ## Run the simulation
-    def runSimulation(self):
+    def trainNetwork(self):
 
         epochs = 0
 
@@ -82,56 +83,73 @@ class Simulator:
                 # Increment epoch
                 epochs += 1
 
-                for i in range(10):
-                    outputVector = []
-
-                    # Run the initial input through the columns
-                    for column in self.columns:
-                        column.calculateInitialColValues(inputVector)
-
-                    # Re-run the computation now taking into account node connections
-                    # to generate the final output value
-                    for column in self.columns:
-                        outputVector.append(column.calculateColumnOutputWithConnections())
-
-                    # Round outputs to integers
-                    outputVector = map(lambda x: 0 if int(round(x)) <= 0 else 1, outputVector)
-
-                    numCorrect = 0
-
-                    print("Input  = "+str(inputVector))
-                    print("Output = "+str(outputVector))
+                # Clamp each input for x cycles
+                for i in range(5):
+                    outputVector = self.runVectorThroughNetwork(inputVector)
 
                     ## Update weights for any incorrect columns
                     for index, column in enumerate(self.columns):
 
-                        expected = inputVector[index]
-                        actual = outputVector[index]
+                        endingIndex = (index+1)*10      # 10, 20,  30,  40,  50
+                        startingIndex = endingIndex-10  # 0,  10,  20,  30,  40
 
-                        # If it was correct/incorrect - update weights accordingly
-                        wasCorrect = (expected == actual)
 
-                        ## Only applicable to incorrect results
-                        # resultType = "overshot"
-                        #
-                        # if(expected == 1 and actual == 0):
-                        #     resultType = "undershot"
-                        # elif (expected == 0 and actual == 1):
-                        #     resultType = "overshot"
+                        for index in range(startingIndex, endingIndex):
+                            expected = inputVector[index]
 
-                        if(wasCorrect):
-                            numCorrect += 1
-                        else:
+                            # Update weights in any case
                             column.updateWeights(expected)
 
 
-                    print(str(i)+" Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
-
-                    if(numCorrect == len(outputVector)):
-                        break
 
 
 
+###### TESTING THE RESULTS
+    ## Run the simulation
+    def runEvaluation(self):
+
+        for index1, inputVector in enumerate(self.inputVectors):
+            outputVector = self.runVectorThroughNetwork(inputVector)
+
+            numCorrect = 0
+
+            # print("Input  = "+str(inputVector))
+            # print("Output = "+str(np.array(outputVector)))
+
+            ## Evaluate how many we got correct for the vector
+            for index2, column in enumerate(self.columns):
+
+                endingIndex = (index2+1)*10      # 10, 20,  30,  40,  50
+                startingIndex = endingIndex-10  # 0,  10,  20,  30,  40
+
+
+                for index3 in range(startingIndex, endingIndex):
+                    expected = inputVector[index3]
+                    actual = outputVector[index3]
+
+                    # If it was correct/incorrect - update weights accordingly
+                    wasCorrect = (expected == actual)
+                    numCorrect += 1 if wasCorrect else 0
+
+            print(str(index1)+" Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
+
+
+
+    def runVectorThroughNetwork(self, inputVector):
+        outputVector = []
+        # Run the initial input through the columns
+        for column in self.columns:
+            column.calculateInitialColValues(inputVector)
+
+        # Re-run the computation now taking into account node connections
+        # to generate the final output value
+        for column in self.columns:
+            output = column.calculateColumnOutputWithConnections()
+            outputVector.extend(output)
+
+        # Round outputs to integers
+        outputVector = map(lambda x: 0 if x <= 0.5 else 1, outputVector)
+        return outputVector
 
 
 if __name__ == "__main__":
@@ -139,7 +157,8 @@ if __name__ == "__main__":
 
     sim = Simulator()
 
-    sim.runSimulation()
+    sim.trainNetwork()
+    sim.runEvaluation()
 
 
 
