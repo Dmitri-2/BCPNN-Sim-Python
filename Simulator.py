@@ -12,7 +12,6 @@ class Simulator:
         self.columns = []
         self.partitionedList = []
         self.targets = []
-        self.inputArray = [12, 19, 5]
         self.inputVectors = []
         self.testVectors = []
 
@@ -104,8 +103,8 @@ class Simulator:
 
 
 
-###### TESTING THE RESULTS
-    ## Run the simulation
+    ###### TESTING THE RESULTS
+    # Run the simulator without updating weights, track accuracy
     def runEvaluation(self):
 
         for index1, inputVector in enumerate(self.inputVectors):

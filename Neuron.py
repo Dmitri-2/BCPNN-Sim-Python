@@ -43,11 +43,6 @@ class Neuron:
         self.connections = np.concatenate([self.connections, connectionList])
         self.reinitializeConWeightMatrix()
 
-    def increaseWeights(self, percent):
-        self.weights += abs(self.weights * percent)
-
-    def decreaseWeights(self, percent):
-        self.weights -= abs(self.weights * percent)
 
 
     # Function that calculates the INITIAL activation of the neuron
@@ -61,22 +56,16 @@ class Neuron:
 
         # ## Equation 1 - update probability for self
         # changeInProb = (input - self.probability) / self.tau
-        #
         # self.probability += changeInProb
 
         # Calculate the node activation (should get a single value)
         # Following formula #5 from Lansner paper
-        # activation = sum(np.dot(input, self.weights))/len(self.weights)
         activation = sum(np.dot(input, self.weights)) + self.bias
 
         ## Take average of activation
         self.value = activation
 
 
-
-
-
-    ## Think of this as EQUATION 5
 
     # Function that augments the node's activation by computing the connection weights
     # Inputs:
@@ -113,8 +102,7 @@ class Neuron:
         # Equation 5 (support value being calculated with bias)
         self.value += self.bias
 
-        ## ASK HERE
-        ## Taking sigmoid ??? Otherwise accelerates away
+        # Taking sigmoid - otherwise value accelerates away
         self.value = self.sigmoidOfValue(self.value)
 
 
@@ -149,14 +137,8 @@ class Neuron:
             if (self.connectedProbabilities[index] <= 0):
                 self.connectedProbabilities[index] = 0.00000000000000000000000001
 
-            # print(self.connectedProbabilities[index])
-
-            # New weight update rule
-            # print("Updating weight from: " + str(self.weights[index]))
-            # print("Taking log of:" +str(self.connectedProbabilities[index]/(self.probability * self.connections[index].probability)))
-            #
+            # Weight update rule
             self.weights[index] = math.log(self.connectedProbabilities[index]/(self.probability * self.connections[index].probability), 10)
-            # print("To : " + str(self.weights[index]))
 
 
 
@@ -171,69 +153,20 @@ class Neuron:
 
 
     def increaseConnectionWeights(self, percent):
-
         # Check if both nodes are active at the same time
         for index, node in enumerate(self.connections):
-            # Implimenting hebbian learning - if
+            # Implementing hebbian learning - if
             # both nodes active at the same time - strengthen the connection
-            # print("both nodes - values " + str(self.isWinningNode) + " - " + str(node.isWinningNode))
-            if(self.isWinningNode or node.isWinningNode):
+
+            if(self.isWinningNode and node.isWinningNode):
                 self.connectionWeights[index] += abs(self.connectionWeights[index] * percent)
-                # print("both nodes activated !!!!")
 
 
     def decreaseConnectionWeights(self, percent):
 
         # Check if both nodes are active at the same time
         for index, node in enumerate(self.connections):
-            # Implimenting hebbian learning - if
-            # both nodes active at the same time - strengthen the connection
-            # print("both nodes - values " + str(self.isWinningNode) + " - " + str(node.isWinningNode))
             if (self.isWinningNode or node.isWinningNode):
                 self.connectionWeights[index] -= abs(self.connectionWeights[index] * percent)
 
 
-
-if __name__ == "__main__":
-    print("Starting")
-
-    ## Initialize the nodes
-    x = Neuron(3, 0.5)
-    y = Neuron(3, 0.5)
-
-    # Step 1
-    ## Calculate the initial node values
-    x.calculate(np.array([2,2,2]))
-    y.calculate(np.array([2,2,2]))
-
-    ## Add a connection from y to x
-    x.addConnectionFrom(y)
-
-    # Step 2
-    ## Recalculate x's value with the new connection
-    x.calculateConnectedNodes()
-
-    print("Final X Value: "+str(x.value))
-
-    ## Weight update check
-    print(x.weights)
-    x.increaseWeights(0.85)
-    print(x.weights)
-    x.decreaseWeights(0.15)
-    print(x.weights)
-
-    print("---- Connected Weights ---- ")
-    print(x.connectionWeights)
-    x.updateConnectionWeights(0.5)
-    print(x.connectionWeights)
-
-    ## Add a connection from y to x
-    x.addConnectionFrom(y)
-
-    # Step 2
-    ## Recalculate x's value with the new connection
-    x.calculateConnectedNodes()
-
-    print("X Value AFTER UPDATES: "+str(x.value))
-
-    print("Done")

@@ -34,8 +34,6 @@ class NeuralColumn:
 
     def calculateInitialColValues(self, inputs):
 
-        ## Used to normalize input here with Sigmoid
-
         ## Step 1 - Compute all neuron values
         for index, neuron in enumerate(self.neurons):
             neuron.calculate(inputs[index])
@@ -83,11 +81,6 @@ class NeuralColumn:
         randomNumOther = random.randrange(0, len(srcColumn.neurons))
         print("Adding random connection to node #"+str(randomNumSelf))
         self.neurons[randomNumSelf].addConnectionFrom(srcColumn.neurons[randomNumOther])
-        # self.crossColumnConnections.append(srcNode)
-
-    # Update weights based on if we were correct or not
-    # If correct - do nothing
-    # def updateWeights(self, wasCorrect, direction):
 
     def updateWeights(self, target):
         for index, neuron in enumerate(self.neurons):
@@ -99,38 +92,5 @@ class NeuralColumn:
             neuron.updateWeights(target)
             neuron.updateConnectedProbabilities()
 
-
-
-if __name__ == "__main__":
-    print("Starting")
-
-    ## Initialize the sample columns
-    column1 = NeuralColumn(5, 3)
-    column2 = NeuralColumn(5, 1)
-
-    ## Initialize the inputs
-    inputs = np.array([15,25,5,30,20])
-
-    # print(column1.neurons)
-    for n in column1.neurons:
-        print(n.weights)
-    # weights = np.random.random_sample((5, 5))
-
-    ## Add a random connection between the two columns
-    column1.addRandomConnectionFrom(column2)
-
-    column1.calculateInitialColValues(inputs)
-    column2.calculateInitialColValues(inputs)
-
-    ## Calculate the two WTA values from the columns
-    print(column1.calculateColumnOutputWithConnections())
-    print(column2.calculateColumnOutputWithConnections())
-
-    ## Do a weight update
-    print("Updated weights")
-
-    column1.updateWeights(False, "undershot")
-    for n in column1.neurons:
-        print(n.weights)
 
 
