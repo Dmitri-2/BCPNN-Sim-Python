@@ -112,8 +112,8 @@ class Simulator:
 
             numCorrect = 0
 
-            # print("Input  = "+str(inputVector))
-            # print("Output = "+str(np.array(outputVector)))
+            print("Input  = "+str(inputVector))
+            print("Output = "+str(np.array(outputVector)))
 
             ## Evaluate how many we got correct for the vector
             for index2, column in enumerate(self.columns):
@@ -146,8 +146,10 @@ class Simulator:
             output = column.calculateColumnOutputWithConnections()
             outputVector.extend(output)
 
+        # print(outputVector)
+
         # Round outputs to integers
-        outputVector = map(lambda x: 0 if x <= 0.5 else 1, outputVector)
+        outputVector = map(lambda x: 0 if x <= 0.25 else 1, outputVector)
         return outputVector
 
 

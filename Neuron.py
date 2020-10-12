@@ -74,13 +74,16 @@ class Neuron:
     #     - new node activation for self
     def calculateConnectedNodes(self):
 
+        # print("Weights are: ")
+        # print(self.weights)
+
         if (self.probability <= 0):
             self.probability = 0.00000000000000000000000001
 
         # Equation 3 (Lansner)
         self.bias = math.log(self.probability, 10)
 
-        # For each connected node, multiple the other node's value by a internally stored weight
+        # For each connected node, multiply the other node's value by a internally stored weight
         # print("Initial value: "+str(self.value))
         for index, node in enumerate(self.connections):
 
@@ -118,16 +121,23 @@ class Neuron:
     #     - new node weights for self
     def updateWeights(self, target):
 
+        # if self.isWinningNode == False:
+        #     self.probability = 0
+        #     return
+
+        tau = 2
+
         # Equation 1
         ## Calculate own
         self.previousProbability = self.probability
-        changeInProb = (target - self.probability)/self.tau
+        changeInProb = (target - self.probability)/tau
         self.probability = self.probability + changeInProb
 
         # print("My prob: " + str(self.probability) + " | change: " + str(changeInProb)+ " | old: " + str(self.previousProbability ))
 
         if(self.probability <= 0):
-            self.probability = 0.00000000000000000000000001
+            self.probability = 0.01
+            # print("Probability was less than 0 - "+str(self.probability))
 
         # Doing logs in base 10
         for index, weight in enumerate(self.weights):
