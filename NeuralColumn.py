@@ -36,8 +36,29 @@ class NeuralColumn:
 
         ## Step 1 - Compute all neuron values
         for index, neuron in enumerate(self.neurons):
-            neuron.calculate(inputs[index])
+            computedIndex = index+(self.number*10)
+            neuron.calculate(inputs[computedIndex])
 
+        ## INDEX goes 0-9
+        ## Column number goes 0-9
+
+        # 0 + 0*10 = 0
+        # 1 + 0*10 = 1
+        # ...
+        # 0 + 1*10 = 10
+        # 1 + 1*10 = 11
+        # 9 + 1*10 = 19
+
+        # 0 + 5*10 = 50
+        # 1 + 5*10 = 51
+
+        # Index * 10
+        # 0 = 0
+        # 1 = 10
+        # 2 = 20
+        # 3 = 30
+        # ...
+        # 9 = 90
 
 
     def calculateColumnOutputWithConnections(self):
@@ -58,6 +79,13 @@ class NeuralColumn:
         # print ("returning - "+str((winNeuron.value)))
 
         return map(lambda neuron: neuron.value, self.neurons)
+
+    def printProbability(self):
+        prob = []
+        for neuron in self.neurons:
+            prob.append(neuron.probability)
+        print(prob)
+
 
 
     def sigmoidOfValue(self, value):

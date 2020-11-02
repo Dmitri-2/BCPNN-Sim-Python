@@ -16,6 +16,7 @@ class Simulator:
         self.testVectors = []
 
         self.numberOfColumns = 10
+        self.debug = True
 
         ## Prepare the input data
         self.readDataIn()
@@ -32,7 +33,7 @@ class Simulator:
         counter = 0
         for row in inputData:
             counter += 1
-            if(counter > 3):
+            if(counter > 1):
                 break
 
             inputVector = np.array(row).astype(np.int)
@@ -76,14 +77,14 @@ class Simulator:
 
         epochs = 0
 
-        while(epochs < 25):
+        while(epochs < 10):
             for index, inputVector in enumerate(self.inputVectors):
 
                 # Increment epoch
                 epochs += 1
 
                 # Clamp each input for x cycles
-                for i in range(5):
+                for i in range(35):
                     outputVector = self.runVectorThroughNetwork(inputVector)
 
                     ## Update weights for any incorrect columns
@@ -112,8 +113,20 @@ class Simulator:
 
             numCorrect = 0
 
-            print("Input  = "+str(inputVector))
-            print("Output = "+str(np.array(outputVector)))
+
+            print("Input  = ")
+            print(list(inputVector))
+            print("Output = ")
+            print(outputVector)
+
+            # print("-------------- COL PROB ------------------\n\n\n")
+            #
+            # for index5, column in enumerate(self.columns):
+            #     print("COLUMN PROBABILITY "+str(index5))
+            #     column.printProbability()
+            #
+            # print("-------------- COL PROB END ------------------\n\n\n")
+
 
             ## Evaluate how many we got correct for the vector
             for index2, column in enumerate(self.columns):
@@ -146,10 +159,11 @@ class Simulator:
             output = column.calculateColumnOutputWithConnections()
             outputVector.extend(output)
 
-        # print(outputVector)
+        if self.debug:
+            print(outputVector)
 
         # Round outputs to integers
-        outputVector = map(lambda x: 0 if x <= 0.25 else 1, outputVector)
+        outputVector = map(lambda x: 0 if x <= -0.5 else 1, outputVector)
         return outputVector
 
 

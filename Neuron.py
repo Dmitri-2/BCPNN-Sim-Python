@@ -19,7 +19,8 @@ class Neuron:
         self.isWinningNode = False
         self.connectionWeights = np.array([])
         self.weights = np.random.uniform(low=-0.25, high=0.25, size=(numOfInputs))
-        self.tau = 0.9
+        self.tau = 250
+        self.debug = False
         # print("Initialized prop to: "+str(initialProbability))
 
     def isActivated(self):
@@ -33,7 +34,7 @@ class Neuron:
         self.connectionWeights = np.random.uniform(low=-0.25, high=0.25, size=(len(self.connections)))
 
         ## Reinitialize the connected prob array
-        self.connectedProbabilities =  np.repeat(0.95, len(self.connections))
+        self.connectedProbabilities =  np.repeat(0.5, len(self.connections))
 
     def addConnectionFrom(self, otherNode):
         self.connections = np.append(self.connections, otherNode)
@@ -54,9 +55,10 @@ class Neuron:
     def calculate(self, input):
         self.input = input
 
+        tau = 15
         # ## Equation 1 - update probability for self
-        # changeInProb = (input - self.probability) / self.tau
-        # self.probability += changeInProb
+        changeInProb = (input - self.probability) / tau
+        self.probability += changeInProb
 
         # Calculate the node activation (should get a single value)
         # Following formula #5 from Lansner paper
@@ -74,8 +76,9 @@ class Neuron:
     #     - new node activation for self
     def calculateConnectedNodes(self):
 
-        # print("Weights are: ")
-        # print(self.weights)
+        if self.debug:
+            print("Weights are: ")
+            print(self.weights)
 
         if (self.probability <= 0):
             self.probability = 0.00000000000000000000000001
@@ -105,8 +108,16 @@ class Neuron:
         # Equation 5 (support value being calculated with bias)
         self.value += self.bias
 
-        # Taking sigmoid - otherwise value accelerates away
-        self.value = self.sigmoidOfValue(self.value)
+
+        # print("Conn - weights")
+        # print(self.connectionWeights)
+
+        # Taking sigsmoid - otherwise value accelerates away
+        # self.value = self.sigmoidOfValue(self.value)
+
+        if self.debug:
+            print("My value is: ")
+            print(self.value)
 
 
     def sigmoidOfValue(self, value):
@@ -125,7 +136,7 @@ class Neuron:
         #     self.probability = 0
         #     return
 
-        tau = 2
+        tau = 50
 
         # Equation 1
         ## Calculate own
@@ -133,7 +144,8 @@ class Neuron:
         changeInProb = (target - self.probability)/tau
         self.probability = self.probability + changeInProb
 
-        # print("My prob: " + str(self.probability) + " | change: " + str(changeInProb)+ " | old: " + str(self.previousProbability ))
+        if self.debug:
+            print("My prob: " + str(self.probability) + " | change: " + str(changeInProb)+ " | old: " + str(self.previousProbability ))
 
         if(self.probability <= 0):
             self.probability = 0.01
@@ -147,7 +159,10 @@ class Neuron:
             if (self.connectedProbabilities[index] <= 0):
                 self.connectedProbabilities[index] = 0.00000000000000000000000001
 
-            # Weight update rule
+
+            # # Note - if statement avoids divide by 0
+            # if((self.probability * self.connections[index].probability) != 0):
+                # Weight update rule
             self.weights[index] = math.log(self.connectedProbabilities[index]/(self.probability * self.connections[index].probability), 10)
 
 
@@ -156,8 +171,23 @@ class Neuron:
     def updateConnectedProbabilities(self):
 
         for index, connNode in enumerate(self.connections):
-            if(connNode.value > 0.5 and self.value > 0.5):
-                self.connectedProbabilities[index] *= 1.3
+            # print("\nConnected probabilities: \n")
+            # print(self.connectedProbabilities)
+            try:
+                if(connNode.value > 0.5 and self.value > 0.5 and self.connectedProbabilities[index] < 300):
+                    self.connectedProbabilities[index] *= 1.05
+                    self.connectionWeights[index] *= 1.005
+                    # print("UPDATING")
+                    # print(self.connectedProbabilities[index])
+                else:
+                    self.connectedProbabilities[index] *= 0.995
+                    self.connectionWeights[index] *= 0.995
+                    # print("VALUES")
+                    # print(str(connNode.value)+" "+str(self.value))
+
+            except RuntimeWarning:
+                print("Encountered issue!")
+                print(self.connectedProbabilities[index])
 
 
 
