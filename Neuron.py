@@ -55,7 +55,7 @@ class Neuron:
     def calculate(self, input):
         self.input = input
 
-        tau = 15
+        tau = 50
         # ## Equation 1 - update probability for self
         changeInProb = (input - self.probability) / tau
         self.probability += changeInProb
@@ -136,7 +136,7 @@ class Neuron:
         #     self.probability = 0
         #     return
 
-        tau = 50
+        tau = 10000
 
         # Equation 1
         ## Calculate own
@@ -175,13 +175,13 @@ class Neuron:
             # print(self.connectedProbabilities)
             try:
                 if(connNode.value > 0.5 and self.value > 0.5 and self.connectedProbabilities[index] < 300):
-                    self.connectedProbabilities[index] *= 1.05
-                    self.connectionWeights[index] *= 1.005
+                    self.connectedProbabilities[index] *= 1.0000005
+                    self.connectionWeights[index] *= 1.0000005
                     # print("UPDATING")
                     # print(self.connectedProbabilities[index])
                 else:
-                    self.connectedProbabilities[index] *= 0.995
-                    self.connectionWeights[index] *= 0.995
+                    self.connectedProbabilities[index] *= 0.9999995
+                    self.connectionWeights[index] *= 0.9999995
                     # print("VALUES")
                     # print(str(connNode.value)+" "+str(self.value))
 

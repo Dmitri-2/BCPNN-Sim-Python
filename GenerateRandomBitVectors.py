@@ -2,11 +2,11 @@ import numpy as np
 import random
 
 nodesInColumn = 10
-columns = 10
+columns = 100
 numberOfVectors = 15
 allVectors = []
 
-file = open("trainVectors100.txt", "w")
+file = open("trainVectors1000.txt", "w")
 
 # For the amount of vectors we want to generate
 for k in range(0, numberOfVectors):

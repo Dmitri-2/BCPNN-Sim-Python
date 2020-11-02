@@ -20,6 +20,7 @@ class Simulator:
 
         ## Prepare the input data
         self.readDataIn()
+        self.readTestDataIn()
 
         ## Set the columns up
         self.setUpColumns(self.numberOfColumns)
@@ -33,21 +34,40 @@ class Simulator:
         counter = 0
         for row in inputData:
             counter += 1
-            if(counter > 1):
+            if(counter > 2):
                 break
 
             inputVector = np.array(row).astype(np.int)
             self.inputVectors.append(np.array(row).astype(np.int))
 
-            # Change 2 values
-            testVector = inputVector
+            # # Change 2 values
+            # testVector = inputVector
+            #
+            # randInt1 = random.randint(0, len(inputVector)-1)
+            # randInt2 = random.randint(0, len(inputVector)-1)
+            # testVector[randInt1] = (testVector[randInt1]+1) % 2
+            # testVector[randInt2] = (testVector[randInt2]+1) % 2
+            #
+            # self.testVectors.append(testVector)
 
-            randInt1 = random.randint(0, len(inputVector)-1)
-            randInt2 = random.randint(0, len(inputVector)-1)
-            testVector[randInt1] = (testVector[randInt1]+1) % 2
-            testVector[randInt2] = (testVector[randInt2]+1) % 2
+    def readTestDataIn(self):
 
-            self.testVectors.append(testVector)
+        with open('trainVector100-test1.txt') as file:
+            reader = csv.reader(file)
+            inputData = list(reader)
+
+        counter = 0
+        for row in inputData:
+            counter += 1
+            if(counter > 2):
+                break
+
+            # testVector = np.array(row).astype(np.int)
+            self.testVectors.append(np.array(row).astype(np.int))
+
+        print("READ IN TEST VECTORS")
+        print(self.testVectors)
+
 
 
     def splitArray(self, lst, parts):
@@ -66,8 +86,7 @@ class Simulator:
 
         for num in range(self.numberOfColumns-1):
             ## In %30 of cases, make connection across columns
-            for i in range(15):
-                if (random.randint(0, 10) < 10):
+            for i in range(150):
                     # Connect a random node in the other column
                     self.columns[num].addRandomConnectionFrom(self.columns[random.randint(0, self.numberOfColumns-1)])
 
@@ -77,11 +96,14 @@ class Simulator:
 
         epochs = 0
 
-        while(epochs < 10):
-            for index, inputVector in enumerate(self.inputVectors):
+        while(epochs < 12):
+            print("Running Epoch - "+str(epochs))
 
-                # Increment epoch
-                epochs += 1
+            # Increment epoch
+            epochs += 1
+
+            for index, inputVector in enumerate(self.inputVectors):
+                print("Trainning with Vector #"+str(index))
 
                 # Clamp each input for x cycles
                 for i in range(35):
@@ -119,6 +141,8 @@ class Simulator:
             print("Output = ")
             print(outputVector)
 
+
+
             # print("-------------- COL PROB ------------------\n\n\n")
             #
             # for index5, column in enumerate(self.columns):
@@ -145,6 +169,31 @@ class Simulator:
 
             print(str(index1)+" Total correct: "+str(numCorrect)+" / "+str(len(outputVector)))
 
+            testOutput = self.runVectorThroughNetwork(self.testVectors[index1])
+
+            numCorrect = 0
+
+            ## Evaluate how many we got correct for the vector
+            for index2, column in enumerate(self.columns):
+
+                endingIndex = (index2 + 1) * 10  # 10, 20,  30,  40,  50
+                startingIndex = endingIndex - 10  # 0,  10,  20,  30,  40
+
+                for index3 in range(startingIndex, endingIndex):
+                    expected = inputVector[index3]
+                    actual = testOutput[index3]
+
+                    # If it was correct/incorrect - update weights accordingly
+                    wasCorrect = (expected == actual)
+                    numCorrect += 1 if wasCorrect else 0
+
+
+            print("Test input = ")
+            print(list(self.testVectors[index1]))
+            print("Test output = ")
+            print(testOutput)
+
+            print(str(index1) + " Total correct: " + str(numCorrect) + " / " + str(len(testOutput)))
 
 
     def runVectorThroughNetwork(self, inputVector):
