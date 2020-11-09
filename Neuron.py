@@ -18,7 +18,7 @@ class Neuron:
         self.connections = np.array([])
         self.isWinningNode = False
         self.connectionWeights = np.array([])
-        self.weights = np.random.uniform(low=-0.25, high=0.25, size=(numOfInputs))
+        self.weights = np.random.uniform(low=0, high=0.05, size=(numOfInputs))
         self.tau = 250
         self.debug = False
         # print("Initialized prop to: "+str(initialProbability))
@@ -27,11 +27,11 @@ class Neuron:
         return True if(self.value > 0.5) else False
 
     def reinitializeWeightMatrix(self):
-        self.weights = np.random.uniform(low=-0.25, high=0.25, size=(self.numOfInputs))
+        self.weights = np.random.uniform(low=0, high=0.05, size=(self.numOfInputs))
 
     def reinitializeConWeightMatrix(self):
         ## Reinitialize the connection weight matrix
-        self.connectionWeights = np.random.uniform(low=-0.25, high=0.25, size=(len(self.connections)))
+        self.connectionWeights = np.random.uniform(low=0, high=0.05, size=(len(self.connections)))
 
         ## Reinitialize the connected prob array
         self.connectedProbabilities =  np.repeat(0.5, len(self.connections))
@@ -55,7 +55,7 @@ class Neuron:
     def calculate(self, input):
         self.input = input
 
-        tau = 50
+        tau = 80
         # ## Equation 1 - update probability for self
         changeInProb = (input - self.probability) / tau
         self.probability += changeInProb
@@ -76,9 +76,13 @@ class Neuron:
     #     - new node activation for self
     def calculateConnectedNodes(self):
 
+        # print(list(self.weights))
+
         if self.debug:
             print("Weights are: ")
-            print(self.weights)
+            print(list(self.weights))
+            print("my probability is: ")
+            print(self.probability)
 
         if (self.probability <= 0):
             self.probability = 0.00000000000000000000000001
@@ -100,7 +104,7 @@ class Neuron:
 
             self.connectedProbabilities[index] += newConnProb / self.tau
 
-            self.value = 0
+            # self.value = 0
 
             # Equation 5 - taking sum of unit's activity * connected weights
             self.value += node.value * self.connectionWeights[index]
@@ -136,7 +140,7 @@ class Neuron:
         #     self.probability = 0
         #     return
 
-        tau = 10000
+        tau = 1000
 
         # Equation 1
         ## Calculate own
@@ -144,26 +148,40 @@ class Neuron:
         changeInProb = (target - self.probability)/tau
         self.probability = self.probability + changeInProb
 
-        if self.debug:
-            print("My prob: " + str(self.probability) + " | change: " + str(changeInProb)+ " | old: " + str(self.previousProbability ))
+        # if self.debug:
+            # print("My prob: " + str(self.probability) + " | change: " + str(changeInProb)+ " | old: " + str(self.previousProbability ))
 
         if(self.probability <= 0):
             self.probability = 0.01
             # print("Probability was less than 0 - "+str(self.probability))
 
         # Doing logs in base 10
-        for index, weight in enumerate(self.weights):
-            # New weight value = log( input - e^(-1 / tau) * (input - a ^ old weight value)
+        # for index, weight in enumerate(self.weights):
+        #     # New weight value = log( input - e^(-1 / tau) * (input - a ^ old weight value)
+        #
+        #     # Verify the connected probability is not 0
+        #     if (self.connectedProbabilities[index] <= 0):
+        #         self.connectedProbabilities[index] = 0.00000000000000000000000001
+        #
+        #
+        #     # # Note - if statement avoids divide by 0
+        #     # if((self.probability * self.connections[index].probability) != 0):
+        #         # Weight update rule
+        #     print("Weight length")
+        #     print(len(self.weights))
+        #     print("connectedProbabilities length")
+        #     print(len(self.connectedProbabilities))
+        #     print("connections length")
+        #     print(len(self.connections))
+        #
+        #     self.weights[index] = math.log(self.connectedProbabilities[index]/(self.probability * self.connections[index].probability), 10)
 
-            # Verify the connected probability is not 0
-            if (self.connectedProbabilities[index] <= 0):
-                self.connectedProbabilities[index] = 0.00000000000000000000000001
+        connections = map(lambda conn: conn.probability, self.connections)
+        c = self.connectedProbabilities[:len(self.weights)]/map(lambda x: self.probability * x, connections[:len(self.weights)])
+        self.weights = np.log10(c)
+        # print(self.weights)
+        # print(testweights)
 
-
-            # # Note - if statement avoids divide by 0
-            # if((self.probability * self.connections[index].probability) != 0):
-                # Weight update rule
-            self.weights[index] = math.log(self.connectedProbabilities[index]/(self.probability * self.connections[index].probability), 10)
 
 
 

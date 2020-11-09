@@ -14,6 +14,7 @@ class NeuralColumn:
         self.neurons = np.array([])
         self.neuronConnectionProbabilities = np.array([])
         self.numNeuronsWithBias = numNeurons # + 1
+        self.debug = False
 
         print("Initializing column: "+str(colNumber))
 
@@ -68,7 +69,7 @@ class NeuralColumn:
             neuron.calculateConnectedNodes()
 
         ## Step 3 - Return the max node value (WTA)
-        winNeuron = max(self.neurons, key=lambda neuron: abs(neuron.value))
+        winNeuron = max(self.neurons, key=lambda neuron: neuron.value)
 
         ## Record index of winning node
         self.winningNodeIndex = np.where(self.neurons == winNeuron)[0][0] #self.neurons.index(winNeuron)
@@ -77,8 +78,17 @@ class NeuralColumn:
 
         # winNeuron.value = self.sigmoidOfValue(winNeuron.value)
         # print ("returning - "+str((winNeuron.value)))
+        outputVector = map(lambda neuron: neuron.value, self.neurons)
 
-        return map(lambda neuron: neuron.value, self.neurons)
+        ## TODO ONLY RETURN 1 WINNING NEURON
+        toReturn = np.zeros(self.numNeuronsWithBias)
+        toReturn[self.winningNodeIndex] = 1
+
+        if self.debug:
+            print(np.round(outputVector, 3))
+            print(toReturn)
+
+        return toReturn
 
     def printProbability(self):
         prob = []
