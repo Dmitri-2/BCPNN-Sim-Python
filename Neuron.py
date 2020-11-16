@@ -2,6 +2,7 @@
 import numpy as np
 import math
 import random
+import sys
 
 class Neuron:
 
@@ -20,8 +21,17 @@ class Neuron:
         self.connectionWeights = np.array([])
         self.weights = np.random.uniform(low=0, high=0.05, size=(numOfInputs))
         self.tau = 250
+        self.calcTau = 80
+        self.weightTau = 1250
+        self.biasMultiplier = 1.5
         self.debug = False
         # print("Initialized prop to: "+str(initialProbability))
+
+        if(len(sys.argv) > 1):
+            self.tau = int(sys.argv[4])
+            self.calcTau = int(sys.argv[5])
+            self.weightTau = int(sys.argv[6])
+            self.biasMultiplier = float(sys.argv[7])
 
     def isActivated(self):
         return True if(self.value > 0.5) else False
@@ -55,9 +65,17 @@ class Neuron:
     def calculate(self, input):
         self.input = input
 
-        tau = 80
+        if self.debug:
+            print("Input is: ")
+            print(input)
+            print("Weights are: ")
+            print(list(self.weights))
+            print("my probability is: ")
+            print(self.probability)
+
+
         # ## Equation 1 - update probability for self
-        changeInProb = (input - self.probability) / tau
+        changeInProb = (input - self.probability) / self.calcTau
         self.probability += changeInProb
 
         # Calculate the node activation (should get a single value)
@@ -66,6 +84,10 @@ class Neuron:
 
         ## Take average of activation
         self.value = activation
+
+        if self.debug:
+            print("Value is: ")
+            print(self.value)
 
 
 
@@ -78,11 +100,11 @@ class Neuron:
 
         # print(list(self.weights))
 
-        if self.debug:
-            print("Weights are: ")
-            print(list(self.weights))
-            print("my probability is: ")
-            print(self.probability)
+        # if self.debug:
+        #     print("Weights are: ")
+        #     print(list(self.weights))
+        #     print("my probability is: ")
+        #     print(self.probability)
 
         if (self.probability <= 0):
             self.probability = 0.00000000000000000000000001
@@ -110,7 +132,7 @@ class Neuron:
             self.value += node.value * self.connectionWeights[index]
 
         # Equation 5 (support value being calculated with bias)
-        self.value += self.bias
+        self.value += (self.bias * self.biasMultiplier)
 
 
         # print("Conn - weights")
@@ -120,7 +142,7 @@ class Neuron:
         # self.value = self.sigmoidOfValue(self.value)
 
         if self.debug:
-            print("My value is: ")
+            print("FINAL -- My value is: ")
             print(self.value)
 
 
@@ -140,12 +162,10 @@ class Neuron:
         #     self.probability = 0
         #     return
 
-        tau = 1000
-
         # Equation 1
         ## Calculate own
         self.previousProbability = self.probability
-        changeInProb = (target - self.probability)/tau
+        changeInProb = (target - self.probability)/self.weightTau
         self.probability = self.probability + changeInProb
 
         # if self.debug:
@@ -178,7 +198,7 @@ class Neuron:
 
         connections = map(lambda conn: conn.probability, self.connections)
         c = self.connectedProbabilities[:len(self.weights)]/map(lambda x: self.probability * x, connections[:len(self.weights)])
-        self.weights = np.log10(c)
+        self.weights = (np.log10(c))/8
         # print(self.weights)
         # print(testweights)
 
